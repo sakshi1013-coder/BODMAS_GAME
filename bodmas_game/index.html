@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="BODMAS Battle - An interactive educational game that teaches BODMAS rules through visual gameplay and puzzles">
+  <title>BODMAS Battle — Learn Math the Fun Way!</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧮</text></svg>">
+</head>
+<body>
+
+  <!-- ============================================
+       MAIN MENU
+       ============================================ -->
+  <section id="main-menu">
+    <div class="menu-header">
+      <h1 class="title-xl">🧮 BODMAS<br>BATTLE</h1>
+      <div class="menu-tagline">Master Math with Fun & Strategy!</div>
+    </div>
+
+    <div class="player-section">
+      <label for="player-name">⚡ Player:</label>
+      <input type="text" id="player-name" class="input" placeholder="Enter your name..." maxlength="20">
+    </div>
+
+    <div class="game-modes">
+      <!-- Mode 1: Bus Jam Style -->
+      <div class="mode-card" data-mode="busjam" id="card-busjam" onclick="Game.startMode('busjam')">
+        <div class="mode-card-header">
+          <div class="mode-icon">🚌</div>
+          <h3>Bus Jam — Step by Step</h3>
+        </div>
+        <div class="mode-card-body">
+          <p>Tap the correct sub-expression to evaluate at each step. Follow BODMAS order to solve the full expression!</p>
+          <span class="badge badge-red">Drag & Tap</span>
+          <span class="badge badge-green">Levels</span>
+          <span class="badge badge-blue">Visual</span>
+        </div>
+        <div class="mode-card-footer">
+          <span class="btn btn-sm btn-red">Play Now →</span>
+        </div>
+      </div>
+
+      <!-- Mode 2: Solve Expression -->
+      <div class="mode-card" data-mode="solve" id="card-solve" onclick="Game.startMode('solve')">
+        <div class="mode-card-header">
+          <div class="mode-icon">🧠</div>
+          <h3>Solve — Expression Challenge</h3>
+        </div>
+        <div class="mode-card-body">
+          <p>Solve math expressions using BODMAS rules. Use hints to see step-by-step breakdowns!</p>
+          <span class="badge badge-blue">Hints</span>
+          <span class="badge badge-yellow">Timed</span>
+          <span class="badge badge-green">Score</span>
+        </div>
+        <div class="mode-card-footer">
+          <span class="btn btn-sm btn-blue">Play Now →</span>
+        </div>
+      </div>
+
+      <!-- Mode 3: Arrange to Match -->
+      <div class="mode-card" data-mode="arrange" id="card-arrange" onclick="Game.startMode('arrange')">
+        <div class="mode-card-header">
+          <div class="mode-icon">🧩</div>
+          <h3>Arrange — Build the Expression</h3>
+        </div>
+        <div class="mode-card-body">
+          <p>Given a target output, arrange numbers and operators to build the correct expression!</p>
+          <span class="badge badge-purple">Puzzle</span>
+          <span class="badge badge-red">Creative</span>
+          <span class="badge badge-yellow">Logic</span>
+        </div>
+        <div class="mode-card-footer">
+          <span class="btn btn-sm btn-purple">Play Now →</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-actions">
+      <button class="btn btn-lg btn-yellow" id="btn-leaderboard" onclick="Leaderboard.show()">
+        <span class="btn-icon">🏆</span> Leaderboard
+      </button>
+      <button class="btn btn-lg btn-black" id="btn-how-to-play" onclick="Game.showHowToPlay()">
+        <span class="btn-icon">📖</span> How to Play
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================
+       GAME SCREEN — BUS JAM
+       ============================================ -->
+  <section id="game-busjam" class="game-screen hidden">
+    <div class="game-topbar">
+      <div class="game-title">🚌 Bus Jam — Step by Step</div>
+      <div class="game-stats">
+        <div class="stat-item">
+          <span class="stat-icon">⭐</span>
+          <span class="stat-value" id="busjam-score">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">📊</span>
+          <span>Lvl</span>
+          <span class="stat-value" id="busjam-level">1</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">⏱️</span>
+          <span class="stat-value timer-display" id="busjam-timer">0:00</span>
+        </div>
+      </div>
+      <div class="game-topbar-actions">
+        <button class="btn btn-sm btn-yellow" onclick="Game.goToMenu()">← Menu</button>
+      </div>
+    </div>
+
+    <div class="difficulty-selector" id="busjam-difficulty">
+      <button class="difficulty-btn active" data-diff="easy" onclick="BusJam.setDifficulty('easy')">🟢 Easy</button>
+      <button class="difficulty-btn" data-diff="medium" onclick="BusJam.setDifficulty('medium')">🟡 Medium</button>
+      <button class="difficulty-btn" data-diff="hard" onclick="BusJam.setDifficulty('hard')">🔴 Hard</button>
+    </div>
+
+    <div class="game-area">
+      <div class="busjam-container">
+        <div class="level-banner">
+          <h2>Solve Step-by-Step</h2>
+          <div class="expression-display" id="busjam-expression"></div>
+        </div>
+
+        <div class="busjam-instruction" id="busjam-instruction">
+          Tap the sub-expression that should be evaluated FIRST according to BODMAS!
+        </div>
+
+        <div class="busjam-blocks" id="busjam-blocks"></div>
+
+        <div class="busjam-steps" id="busjam-steps-panel">
+          <h3>📋 Solution Steps</h3>
+          <div id="busjam-steps-list"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       GAME SCREEN — SOLVE EXPRESSION
+       ============================================ -->
+  <section id="game-solve" class="game-screen hidden">
+    <div class="game-topbar">
+      <div class="game-title">🧠 Solve — Expression Challenge</div>
+      <div class="game-stats">
+        <div class="stat-item">
+          <span class="stat-icon">⭐</span>
+          <span class="stat-value" id="solve-score">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">📊</span>
+          <span>Lvl</span>
+          <span class="stat-value" id="solve-level">1</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">⏱️</span>
+          <span class="stat-value timer-display" id="solve-timer">0:00</span>
+        </div>
+      </div>
+      <div class="game-topbar-actions">
+        <button class="btn btn-sm btn-yellow" onclick="Game.goToMenu()">← Menu</button>
+      </div>
+    </div>
+
+    <div class="difficulty-selector" id="solve-difficulty">
+      <button class="difficulty-btn active" data-diff="easy" onclick="SolveMode.setDifficulty('easy')">🟢 Easy</button>
+      <button class="difficulty-btn" data-diff="medium" onclick="SolveMode.setDifficulty('medium')">🟡 Medium</button>
+      <button class="difficulty-btn" data-diff="hard" onclick="SolveMode.setDifficulty('hard')">🔴 Hard</button>
+    </div>
+
+    <div class="game-area">
+      <div class="solve-container">
+        <div class="solve-expression-box">
+          <div class="expression" id="solve-expression"></div>
+        </div>
+
+        <div class="solve-input-area">
+          <input type="number" class="input" id="solve-answer" placeholder="Your answer..." step="any">
+          <button class="btn btn-green" onclick="SolveMode.submitAnswer()" id="solve-submit-btn">✓ Submit</button>
+        </div>
+
+        <div class="solve-actions">
+          <button class="btn btn-orange" onclick="SolveMode.showHint()" id="solve-hint-btn">
+            💡 Show Hint
+          </button>
+          <button class="btn btn-blue" onclick="SolveMode.skipQuestion()">
+            ⏭️ Skip
+          </button>
+        </div>
+
+        <div id="solve-feedback" class="hidden"></div>
+        <div id="solve-hint-panel" class="hint-panel hidden">
+          <h3>💡 BODMAS Step-by-Step</h3>
+          <div id="solve-hint-steps"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       GAME SCREEN — ARRANGE TO MATCH
+       ============================================ -->
+  <section id="game-arrange" class="game-screen hidden">
+    <div class="game-topbar">
+      <div class="game-title">🧩 Arrange — Build the Expression</div>
+      <div class="game-stats">
+        <div class="stat-item">
+          <span class="stat-icon">⭐</span>
+          <span class="stat-value" id="arrange-score">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">📊</span>
+          <span>Lvl</span>
+          <span class="stat-value" id="arrange-level">1</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">⏱️</span>
+          <span class="stat-value timer-display" id="arrange-timer">0:00</span>
+        </div>
+      </div>
+      <div class="game-topbar-actions">
+        <button class="btn btn-sm btn-yellow" onclick="Game.goToMenu()">← Menu</button>
+      </div>
+    </div>
+
+    <div class="difficulty-selector" id="arrange-difficulty">
+      <button class="difficulty-btn active" data-diff="easy" onclick="ArrangeMode.setDifficulty('easy')">🟢 Easy</button>
+      <button class="difficulty-btn" data-diff="medium" onclick="ArrangeMode.setDifficulty('medium')">🟡 Medium</button>
+      <button class="difficulty-btn" data-diff="hard" onclick="ArrangeMode.setDifficulty('hard')">🔴 Hard</button>
+    </div>
+
+    <div class="game-area">
+      <div class="arrange-container">
+        <div class="arrange-target">
+          <h3>🎯 Target Output</h3>
+          <div class="target-value" id="arrange-target-value"></div>
+        </div>
+
+        <div class="arrange-workspace">
+          <div class="arrange-available">
+            <h3>📦 Available Pieces</h3>
+            <div class="arrange-pieces" id="arrange-pieces"></div>
+          </div>
+
+          <div class="arrange-builder">
+            <h3>🔧 Your Expression</h3>
+            <div class="arrange-slots" id="arrange-slots"></div>
+            <div class="arrange-result" id="arrange-result">= ?</div>
+          </div>
+        </div>
+
+        <div class="arrange-actions">
+          <button class="btn btn-green" onclick="ArrangeMode.checkAnswer()">✓ Check</button>
+          <button class="btn btn-orange" onclick="ArrangeMode.clearBuilder()">🗑️ Clear</button>
+          <button class="btn btn-blue" onclick="ArrangeMode.skipQuestion()">⏭️ Skip</button>
+        </div>
+
+        <div id="arrange-feedback" class="hidden"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       LEADERBOARD SCREEN
+       ============================================ -->
+  <section id="leaderboard-screen" class="leaderboard-screen hidden">
+    <div class="container">
+      <div class="leaderboard-header">
+        <h1 class="title-lg">🏆 Leaderboard</h1>
+        <p class="subtitle">Top BODMAS Champions</p>
+      </div>
+
+      <div class="leaderboard-tabs" id="leaderboard-tabs">
+        <button class="leaderboard-tab active" data-filter="all" onclick="Leaderboard.filter('all')">All Modes</button>
+        <button class="leaderboard-tab" data-filter="busjam" onclick="Leaderboard.filter('busjam')">🚌 Bus Jam</button>
+        <button class="leaderboard-tab" data-filter="solve" onclick="Leaderboard.filter('solve')">🧠 Solve</button>
+        <button class="leaderboard-tab" data-filter="arrange" onclick="Leaderboard.filter('arrange')">🧩 Arrange</button>
+      </div>
+
+      <div class="leaderboard-table-wrapper">
+        <table class="leaderboard-table" id="leaderboard-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Player</th>
+              <th>Score</th>
+              <th>Mode</th>
+              <th>Level</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body"></tbody>
+        </table>
+      </div>
+
+      <div id="leaderboard-empty" class="leaderboard-empty hidden">
+        <div style="font-size: 3rem;">🏜️</div>
+        <p>No scores yet! Be the first to play!</p>
+      </div>
+
+      <div class="leaderboard-actions">
+        <button class="btn btn-yellow" onclick="Game.goToMenu()">← Back to Menu</button>
+        <button class="btn btn-red" onclick="Leaderboard.reset()">🗑️ Reset Scores</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       LEVEL COMPLETE MODAL
+       ============================================ -->
+  <div id="level-complete-modal" class="modal-overlay hidden">
+    <div class="level-complete">
+      <h2 id="level-complete-title">🎉 Level Complete!</h2>
+      <div class="score-display" id="level-complete-score">+100</div>
+      <div class="score-breakdown" id="level-complete-breakdown"></div>
+      <div class="level-complete-actions">
+        <button class="btn btn-green" onclick="Game.nextLevel()">▶️ Next Level</button>
+        <button class="btn btn-yellow" onclick="Game.goToMenu()">← Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
+       HOW TO PLAY MODAL
+       ============================================ -->
+  <div id="how-to-play-modal" class="modal-overlay hidden" onclick="Game.closeHowToPlay(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="Game.closeHowToPlay()">&times;</button>
+      <h2 class="title-md" style="margin-bottom: 20px;">📖 How to Play</h2>
+      
+      <div style="margin-bottom: 24px;">
+        <h3 style="margin-bottom: 8px; color: var(--red);">🔢 What is BODMAS?</h3>
+        <p style="margin-bottom: 12px;">BODMAS tells us the <strong>order</strong> to solve math operations:</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+          <span class="badge badge-red"><strong>B</strong> — Brackets</span>
+          <span class="badge badge-blue"><strong>O</strong> — Orders (Powers)</span>
+          <span class="badge badge-green"><strong>D</strong> — Division</span>
+          <span class="badge badge-yellow"><strong>M</strong> — Multiplication</span>
+          <span class="badge" style="background: var(--orange);"><strong>A</strong> — Addition</span>
+          <span class="badge" style="background: var(--purple); color: white;"><strong>S</strong> — Subtraction</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <h3 style="margin-bottom: 8px; color: var(--red);">🚌 Bus Jam Mode</h3>
+        <p>Tap the correct sub-expression that should be calculated first. Follow BODMAS order step by step!</p>
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <h3 style="margin-bottom: 8px; color: var(--blue);">🧠 Solve Mode</h3>
+        <p>Calculate the answer to each expression. Use the <strong>Hint</strong> button to see the BODMAS breakdown!</p>
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <h3 style="margin-bottom: 8px; color: var(--purple);">🧩 Arrange Mode</h3>
+        <p>You're given pieces and a target answer. Arrange them to form an expression that equals the target!</p>
+      </div>
+
+      <button class="btn btn-black" onclick="Game.closeHowToPlay()" style="width: 100%;">Got it! 🎮</button>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-container"></div>
+  
+  <!-- Confetti container -->
+  <div id="confetti-container" class="confetti-container hidden"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
