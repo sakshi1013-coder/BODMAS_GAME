@@ -11,6 +11,34 @@
 <body>
 
   <!-- ============================================
+       PRELOADER / LOADER 
+       ============================================ -->
+  <div id="preloader" class="preloader">
+    <div class="loader-content">
+      <div class="loader-top">
+        <div class="floating-symbols">
+          <span style="--i:1">+</span>
+          <span style="--i:2">−</span>
+          <span style="--i:3">×</span>
+          <span style="--i:4">÷</span>
+          <span style="--i:5">(</span>
+          <span style="--i:6">)</span>
+        </div>
+        <div class="solving-animation" id="solving-animation">
+          <div class="expression-step" id="loader-step">3 + 2 × (8 ÷ 4)</div>
+        </div>
+      </div>
+      
+      <div class="loader-middle">
+        <div class="loading-text" id="loader-message">Applying BODMAS rule...</div>
+        <div class="progress-container">
+          <div class="progress-bar" id="loader-progress"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================
        MAIN MENU
        ============================================ -->
   <section id="main-menu">
@@ -179,8 +207,39 @@
         </div>
 
         <div class="solve-input-area">
-          <input type="number" class="input" id="solve-answer" placeholder="Your answer..." step="any">
-          <button class="btn btn-green" onclick="SolveMode.submitAnswer()" id="solve-submit-btn">✓ Submit</button>
+          <div class="keyboard-display-wrapper">
+             <input type="text" class="input keyboard-display" id="solve-answer" readonly placeholder="?">
+          </div>
+          
+          <div class="neo-keyboard" id="solve-keyboard">
+            <div class="keyboard-row">
+              <button class="key-btn" onclick="SolveMode.pressKey('7')">7</button>
+              <button class="key-btn" onclick="SolveMode.pressKey('8')">8</button>
+              <button class="key-btn" onclick="SolveMode.pressKey('9')">9</button>
+              <button class="key-btn key-blue" onclick="SolveMode.pressKey('/')">÷</button>
+            </div>
+            <div class="keyboard-row">
+              <button class="key-btn" onclick="SolveMode.pressKey('4')">4</button>
+              <button class="key-btn" onclick="SolveMode.pressKey('5')">5</button>
+              <button class="key-btn" onclick="SolveMode.pressKey('6')">6</button>
+              <button class="key-btn key-yellow" onclick="SolveMode.pressKey('*')">×</button>
+            </div>
+            <div class="keyboard-row">
+              <button class="key-btn" onclick="SolveMode.pressKey('1')">1</button>
+              <button class="key-btn" onclick="SolveMode.pressKey('2')">2</button>
+              <button class="key-btn" onclick="SolveMode.pressKey('3')">3</button>
+              <button class="key-btn key-orange" onclick="SolveMode.pressKey('-')">−</button>
+            </div>
+            <div class="keyboard-row">
+              <button class="key-btn" onclick="SolveMode.pressKey('0')">0</button>
+              <button class="key-btn" onclick="SolveMode.pressKey('.')">.</button>
+              <button class="key-btn key-red" onclick="SolveMode.pressKey('delete')">⌫</button>
+              <button class="key-btn key-green" onclick="SolveMode.pressKey('+')">+</button>
+            </div>
+            <div class="keyboard-row">
+               <button class="key-btn key-black key-wide" onclick="SolveMode.submitAnswer()">SUBMIT ✓</button>
+            </div>
+          </div>
         </div>
 
         <div class="solve-actions">

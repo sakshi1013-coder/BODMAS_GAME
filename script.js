@@ -2,6 +2,71 @@
    BODMAS BATTLE — Game Logic
    ============================================ */
 
+const Loader = {
+  messages: [
+    "Applying BODMAS rule...",
+    "Solving brackets...",
+    "Calculating operations...",
+    "Finalizing answer..."
+  ],
+  
+  async start() {
+    const el = Utils.$('preloader');
+    if (!el) return;
+    
+    el.classList.remove('fade-out', 'hidden');
+    this.updateProgress(0);
+    this.cycleMessages();
+    await this.solveAnimation();
+    
+    // Final jump to 100%
+    this.updateProgress(100);
+    setTimeout(() => {
+      el.classList.add('fade-out');
+      // After transition, can hide it
+      setTimeout(() => el.classList.add('hidden'), 500);
+    }, 500);
+  },
+
+  updateProgress(percent) {
+    const bar = Utils.$('loader-progress');
+    if (bar) bar.style.width = percent + '%';
+  },
+
+  cycleMessages() {
+    let i = 0;
+    const msgEl = Utils.$('loader-message');
+    const interval = setInterval(() => {
+      const loader = Utils.$('preloader');
+      if (!loader || loader.classList.contains('fade-out')) {
+        clearInterval(interval);
+        return;
+      }
+      i = (i + 1) % this.messages.length;
+      msgEl.textContent = this.messages[i];
+    }, 1000);
+  },
+
+  async solveAnimation() {
+    const stepEl = Utils.$('loader-step');
+    const steps = [
+      { text: "3 + 2 × (8 ÷ 4)", progress: 10 },
+      { text: "3 + 2 × <span class='op-highlight'>(8 ÷ 4)</span>", progress: 25 },
+      { text: "3 + 2 × (2)", progress: 40 },
+      { text: "3 + <span class='op-highlight'>2 × 2</span>", progress: 60 },
+      { text: "3 + 4", progress: 80 },
+      { text: "<span class='op-highlight'>3 + 4</span>", progress: 90 },
+      { text: "7", progress: 95 }
+    ];
+
+    for (const step of steps) {
+      stepEl.innerHTML = step.text;
+      this.updateProgress(step.progress);
+      await new Promise(r => setTimeout(r, 800));
+    }
+  }
+};
+
 // ==========================================
 // UTILITY FUNCTIONS
 // ==========================================
@@ -503,9 +568,12 @@ const Game = {
     this.showScreen('main-menu');
   },
 
-  startMode(mode) {
+  async startMode(mode) {
     this.currentMode = mode;
     this.playerName = this.getPlayerName();
+
+    // Show loader first
+    await Loader.start();
 
     switch (mode) {
       case 'busjam':
@@ -803,6 +871,20 @@ const SolveMode = {
   correctInLevel: 0,
   targetQuestions: 5,
 
+  pressKey(key) {
+    const input = Utils.$('solve-answer');
+    if (key === 'delete') {
+      input.value = input.value.slice(0, -1);
+    } else {
+      // Handle operators for visual feedback if needed, 
+      // but mostly for numbers and dots
+      const val = key === '*' ? '×' : key === '/' ? '÷' : key;
+      if (input.value.length < 15) {
+        input.value += val;
+      }
+    }
+  },
+
   init() {
     this.score = 0;
     this.level = 1;
@@ -845,10 +927,10 @@ const SolveMode = {
 
   submitAnswer() {
     const input = Utils.$('solve-answer');
-    const userAnswer = parseFloat(input.value);
+    const userAnswer = Utils.safeEval(input.value);
     
     if (isNaN(userAnswer)) {
-      Utils.showToast('⚠️ Please enter a number!', 'error');
+      Utils.showToast('⚠️ Please enter a valid number or expression!', 'error');
       return;
     }
 
@@ -1175,4 +1257,5 @@ const ArrangeMode = {
 
 document.addEventListener('DOMContentLoaded', () => {
   Game.init();
+  Loader.start();
 });
